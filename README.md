@@ -1,6 +1,6 @@
-# 📰 AS65A - Certificadora De Competência Identitária
+# 📰 Cadastro e Distribuição de Notícias
 
-Sistema web para **cadastro e distribuição de notícias**, com interface moderna e responsiva.
+Sistema web para **cadastro e distribuição de notícias**, com interface moderna e responsiva, para a matéria AS65A - Certificadora De Competência Identitária.
 
 ---
 
