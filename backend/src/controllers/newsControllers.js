@@ -3,7 +3,8 @@ const newsServices = require('../services/newsServices');
 const generateNewsLinks = (newsItem) => {
   const baseUrl = '/news';
   return [
-    { rel: 'self', href: `${baseUrl}/${newsItem._id}`, method: 'GET' }
+    { rel: 'self', href: `${baseUrl}/${newsItem._id}`, method: 'GET' },
+    { rel: 'update', href: `${baseUrl}/${newsItem._id}`, method: 'PUT' }
   ];
 };
 
@@ -111,5 +112,32 @@ exports.getAll = async (req, res) => {
   } catch (error) {
     console.error('Erro ao buscar todas as notícias:', error);
     return res.status(500).json({ message: 'Erro ao buscar notícias', error: error.message });
+  }
+};
+
+exports.update = async (req, res) => {
+  try {
+    const newsId = req.params.id;
+    const newsData = req.body;
+    const updatedNews = await newsServices.updateNewsById(newsId, newsData);
+
+    if (!updatedNews) {
+      return res.status(404).json({ message: 'Notícia não encontrada para atualização' });
+    }
+
+    const response = {
+      message: 'Notícia atualizada com sucesso',
+      news: updatedNews.toObject(),
+      _links: generateNewsLinks(updatedNews)
+    };
+    response._links.push({ rel: 'collection', href: '/news', method: 'GET' });
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error('Erro ao atualizar notícia:', error);
+    if (error.message.includes("Notícia não encontrada")) {
+      return res.status(404).json({ message: error.message });
+    }
+    return res.status(500).json({ message: 'Erro ao atualizar notícia', error: error.message });
   }
 };
