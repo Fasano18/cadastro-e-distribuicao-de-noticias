@@ -3,11 +3,13 @@ const moongose = require('mongoose');
 const newsSchema = new moongose.Schema({
   Tema: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   Titulo: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   Subtitulo: {
     type: String,
@@ -29,7 +31,8 @@ const newsSchema = new moongose.Schema({
   dataPublicacao: {
     type: Date,
     required: true,
-    default: Date.now
+    default: Date.now,
+    index: true
   }
 },
 {
