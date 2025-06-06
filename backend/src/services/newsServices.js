@@ -77,3 +77,16 @@ exports.updateNewsById = async (id, newsData) => {
     throw error;
   }
 };
+
+exports.deleteNewsById = async (id) => {
+  try {
+    const deletedNews = await newsModel.findByIdAndDelete(id);
+    if (!deletedNews) {
+      throw new Error("Notícia não encontrada para exclusão");
+    }
+    return deletedNews;
+  } catch (error) {
+    console.error("Erro no serviço ao tentar deletar notícia:", error.message);
+    throw error;
+  }
+};
