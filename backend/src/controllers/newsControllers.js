@@ -141,3 +141,25 @@ exports.update = async (req, res) => {
     return res.status(500).json({ message: 'Erro ao atualizar notícia', error: error.message });
   }
 };
+
+exports.remove = async (req, res) => {
+  try {
+    const newsId = req.params.id;
+    await newsServices.deleteNewsById(newsId);
+
+
+    return res.status(200).json({ // HTTP 200 ou 204 (No Content)
+      message: 'Notícia deletada com sucesso',
+      _links: [
+        { rel: 'collection', href: '/news', method: 'GET' },
+        { rel: 'create', href: '/news', method: 'POST' }
+      ]
+    });
+  } catch (error) {
+    console.error('Erro ao deletar notícia:', error);
+    if (error.message.includes("Notícia não encontrada")) {
+      return res.status(404).json({ message: error.message });
+    }
+    return res.status(500).json({ message: 'Erro ao deletar notícia', error: error.message });
+  }
+};
