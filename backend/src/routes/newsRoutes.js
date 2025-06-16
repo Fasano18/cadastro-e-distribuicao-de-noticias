@@ -8,4 +8,6 @@ router.get('/:id', newsController.getById);
 
 router.get('/', newsController.getAll);
 
+router.put('/:id', newsController.update);
+
 module.exports = router;

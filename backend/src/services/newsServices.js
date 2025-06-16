@@ -64,3 +64,16 @@ exports.findAllNews = async (filters = {}) => {
     throw error
   }
 };
+
+exports.updateNewsById = async (id, newsData) => {
+  try {
+    const updatedNews = await newsModel.findByIdAndUpdate(id, newsData, { new: true });
+    if (!updatedNews) {
+      throw new Error("Notícia não encontrada para atualização");
+    }
+    return updatedNews;
+  } catch (error) {
+    console.error("Erro no serviço ao tentar atualizar notícia:", error.message);
+    throw error;
+  }
+};
