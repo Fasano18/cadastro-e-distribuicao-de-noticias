@@ -8,6 +8,7 @@ import {
   Loader2,
   MapPin,
   Trash2,
+  Edit3,
 } from "lucide-react";
 
 export default function DetalhesNoticia() {
@@ -139,6 +140,10 @@ export default function DetalhesNoticia() {
     router.back();
   };
 
+  const editarNoticia = () => {
+    router.push(`/noticia/${id}/editar`);
+  };
+
   const compartilhar = () => {
     if (navigator.share) {
       navigator.share({
@@ -248,6 +253,13 @@ export default function DetalhesNoticia() {
               Portal de Notícias
             </h1>
             <div className="flex items-center space-x-3">
+              <button
+                onClick={editarNoticia}
+                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Edit3 size={16} />
+                <span>Editar</span>
+              </button>
               <button
                 onClick={excluirNoticia}
                 className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
