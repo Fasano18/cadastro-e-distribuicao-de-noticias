@@ -1,43 +1,71 @@
 const { URLSearchParams } = require('url');
 
-const baseUrl = '/news';
+const newsBaseUrl = '/news';
+const authBaseUrl = '/auth';
 
-exports.generateNewsItemLinks = (newsItem) => {
-  return [
-    { rel: 'self', href: `${baseUrl}/${newsItem._id}`, method: 'GET' },
-    { rel: 'create', href: baseUrl, method: 'POST' },
-    { rel: 'update', href: `${baseUrl}/${newsItem._id}`, method: 'PUT' },
-    { rel: 'delete', href: `${baseUrl}/${newsItem._id}`, method: 'DELETE' },
-    { rel: 'collection', href: baseUrl, method: 'GET' },
-  ];
+const generateAuthLinks = (user) => {
+    if (user) {
+        return [{ rel: 'logout', href: `${authBaseUrl}/logout`, method: 'POST' }];
+    }
+    return [
+        { rel: 'login', href: `${authBaseUrl}/login`, method: 'POST' },
+        { rel: 'register', href: `${authBaseUrl}/register`, method: 'POST' }
+    ];
 };
 
-exports.generateNewsCollectionLinks = (req, totalCount, page, limit) => {
-  const links = [
-    { rel: 'self', href: `${baseUrl}${req.url}`, method: 'GET' },
-    { rel: 'create', href: baseUrl, method: 'POST' },
-  ];
+exports.generateNewsItemLinks = (newsItem, user) => {
+    const links = [
+        { rel: 'self', href: `${newsBaseUrl}/${newsItem._id}`, method: 'GET' },
+        { rel: 'collection', href: newsBaseUrl, method: 'GET' },
+    ];
 
-  const totalPages = Math.ceil(totalCount / limit);
-  const queryParams = new URLSearchParams(req.query);
-
-  if (totalPages > 0) {
-    queryParams.set('page', 1);
-    links.push({ rel: 'first', href: `${baseUrl}?${queryParams.toString()}`, method: 'GET' });
-
-    if (page > 1) {
-      queryParams.set('page', page - 1);
-      links.push({ rel: 'prev', href: `${baseUrl}?${queryParams.toString()}`, method: 'GET' });
-    }
-
-    if (page < totalPages) {
-      queryParams.set('page', page + 1);
-      links.push({ rel: 'next', href: `${baseUrl}?${queryParams.toString()}`, method: 'GET' });
+    if (user && user.isAdmin) {
+        links.push(
+            { rel: 'update', href: `${newsBaseUrl}/${newsItem._id}`, method: 'PUT' },
+            { rel: 'delete', href: `${newsBaseUrl}/${newsItem._id}`, method: 'DELETE' }
+        );
     }
     
-    queryParams.set('page', totalPages);
-    links.push({ rel: 'last', href: `${baseUrl}?${queryParams.toString()}`, method: 'GET' });
-  }
+    return links.concat(generateAuthLinks(user));
+};
 
-  return links;
+exports.generateNewsCollectionLinks = (req, totalCount, page, limit, user) => {
+    const links = [
+        { rel: 'self', href: `${newsBaseUrl}${req.url}`, method: 'GET' },
+    ];
+
+    if (user && user.isAdmin) {
+        links.push({ rel: 'create', href: newsBaseUrl, method: 'POST' });
+    }
+
+    const totalPages = Math.ceil(totalCount / limit);
+    const queryParams = new URLSearchParams(req.query);
+
+    if (totalPages > 1) { // Add pagination only if needed
+        queryParams.set('page', '1');
+        links.push({ rel: 'first', href: `${newsBaseUrl}?${queryParams.toString()}`, method: 'GET' });
+        if (page > 1) {
+            queryParams.set('page', page - 1);
+            links.push({ rel: 'prev', href: `${newsBaseUrl}?${queryParams.toString()}`, method: 'GET' });
+        }
+        if (page < totalPages) {
+            queryParams.set('page', page + 1);
+            links.push({ rel: 'next', href: `${newsBaseUrl}?${queryParams.toString()}`, method: 'GET' });
+        }
+        queryParams.set('page', totalPages);
+        links.push({ rel: 'last', href: `${newsBaseUrl}?${queryParams.toString()}`, method: 'GET' });
+    }
+
+    return links.concat(generateAuthLinks(user));
+};
+
+exports.generatePostDeletionLinks = (user) => {
+    const links = [
+        { rel: 'collection', href: newsBaseUrl, method: 'GET' },
+    ];
+     if (user && user.isAdmin) {
+        links.push({ rel: 'create', href: newsBaseUrl, method: 'POST' });
+    }
+
+    return links.concat(generateAuthLinks(user));
 };
