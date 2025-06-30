@@ -6,7 +6,7 @@ exports.insertNews = async (newsData) => {
 
     return await newNews.save();
   }
-  catch {
+  catch (error) {
     console.error("Erro no serviço ao tentar salvar notícia:", error.message);
     throw error;
   }
@@ -44,10 +44,10 @@ exports.findAllNews = async (filters = {}) => {
     if (filters.q) {
       const searchQuery = { $regex: new RegExp(filters.q, 'i') };
       query.$or = [
-        { Titulo: searchQuery },
-        { Subtitulo: searchQuery },
-        { Descricao: searchQuery },
-        { Tema: searchQuery }
+        { titulo: searchQuery },
+        { subtitulo: searchQuery },
+        { descricao: searchQuery },
+        { tema: searchQuery }
       ];
     }
 

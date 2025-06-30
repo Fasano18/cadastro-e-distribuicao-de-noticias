@@ -1,10 +1,13 @@
 const newsRoutes = require('./routes/newsRoutes');
 const connectDB = require('./config/db');
 const express = require('express');
+const cors = require('cors');
 
 const app = express();
 
 app.use(express.json());
+
+app.use(cors());
 
 /*----------------------INSERT----------------------*/
 app.use('/news', newsRoutes);
