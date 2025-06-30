@@ -1,0 +1,17 @@
+{
+  "name": "cadastro-e-distribuicao-de-noticias",
+  "version": "1.0.0",
+  "description": "Sistema web para **cadastro e distribuição de notícias**, com interface moderna e responsiva, para a matéria AS65A - Certificadora De Competência Identitária.",
+  "main": "index.js",
+  "scripts": {
+    "install:all": "npm install && (cd frontend && npm install) && cd .. && (cd backend && npm install)",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\""
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
