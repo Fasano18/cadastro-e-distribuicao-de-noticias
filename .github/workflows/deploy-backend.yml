@@ -1,0 +1,49 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        npm ci
+    
+    - name: Run backend tests
+      run: |
+        cd backend
+        npm test --if-present
+    
+    - name: Build backend
+      run: |
+        cd backend
+        npm run build --if-present
+
+  # Notificação de deploy (você pode adicionar deploy real aqui)
+  notify-deploy:
+    needs: test-backend
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: Notify deployment
+      run: |
+        echo "Backend tested successfully!"
+        echo "Deploy to your preferred platform (Render, Railway, etc.)"
+        echo "Remember to update environment variables in your deployment platform" 

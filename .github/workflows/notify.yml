@@ -1,0 +1,50 @@
+name: Notify Deploy Status
+
+on:
+  workflow_run:
+    workflows: ["Deploy to Vercel"]
+    types:
+      - completed
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion != 'skipped' }}
+    
+    steps:
+    - name: Notify on Success
+      if: ${{ github.event.workflow_run.conclusion == 'success' }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { owner, repo } = context.repo;
+          const run_id = ${{ github.event.workflow_run.id }};
+          
+          // Comentário no commit que disparou o deploy
+          const commit_sha = '${{ github.event.workflow_run.head_sha }}';
+          const commit_url = `https://github.com/${owner}/${repo}/commit/${commit_sha}`;
+          
+          console.log(`✅ Deploy concluído com sucesso!`);
+          console.log(`🔗 Commit: ${commit_url}`);
+          console.log(`🚀 Aplicação disponível em: https://seu-projeto.vercel.app`);
+    
+    - name: Notify on Failure
+      if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { owner, repo } = context.repo;
+          const run_id = ${{ github.event.workflow_run.id }};
+          
+          console.log(`❌ Deploy falhou!`);
+          console.log(`🔗 Verifique os logs: https://github.com/${owner}/${repo}/actions/runs/${run_id}`);
+          
+          // Aqui você pode adicionar notificações para Slack, Discord, etc.
+          // Exemplo para Slack:
+          // await fetch('https://hooks.slack.com/services/YOUR/WEBHOOK/URL', {
+          //   method: 'POST',
+          //   headers: { 'Content-Type': 'application/json' },
+          //   body: JSON.stringify({
+          //     text: `❌ Deploy falhou para ${owner}/${repo}`
+          //   })
+          // }); 
