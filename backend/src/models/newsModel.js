@@ -1,29 +1,29 @@
 const moongose = require('mongoose');
 
 const newsSchema = new moongose.Schema({
-  Tema: {
+  tema: {
     type: String,
     required: true,
     index: true
   },
-  Titulo: {
+  titulo: {
     type: String,
     required: true,
     index: true
   },
-  Subtitulo: {
+  subtitulo: {
     type: String,
     required: true
   },
-  Descricao: {
+  descricao: {
     type: String,
     required: true
   },
-  Autor: {
+  autor: {
     type: String,
     required: true
   },
-  Local: {
+  local: {
     cidade: { type: String, required: false },
     estado: { type: String, required: false },
     pais: { type: String, required: true }
@@ -33,7 +33,15 @@ const newsSchema = new moongose.Schema({
     required: true,
     default: Date.now,
     index: true
-  }
+  },
+  categoria: {
+    type: String,
+    required: true,
+  },
+  imagem: {
+    type: String,
+    required: false,
+  },
 },
 {
   timestamps: true
