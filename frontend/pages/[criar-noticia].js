@@ -314,9 +314,14 @@ export default function CriarNoticia() {
         {/* Header */}
         <header className="bg-yellow-400 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="flex items-center justify-between">
+            <div className="relative w-full">
+              <div className="flex justify-center items-center">
+                <h1 className="text-3xl font-bold text-gray-800 text-center">
+                  Criar Nova Notícia
+                </h1>
+              </div>
               <Link href="/">
-                <button className="text-gray-800 hover:text-gray-600 font-medium flex items-center gap-2">
+                <button className="absolute top-1/2 left-0 transform -translate-y-1/2 text-gray-800 hover:text-gray-600 font-medium flex items-center gap-2">
                   <svg
                     className="w-5 h-5"
                     fill="none"
@@ -333,10 +338,6 @@ export default function CriarNoticia() {
                   Voltar ao Portal
                 </button>
               </Link>
-              <h1 className="text-3xl font-bold text-gray-800">
-                Criar Nova Notícia
-              </h1>
-              <div className="w-32"></div>
             </div>
           </div>
         </header>

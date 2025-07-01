@@ -241,17 +241,19 @@ export default function DetalhesNoticia() {
       {/* Header */}
       <header className="bg-yellow-400 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="relative w-full">
+            <div className="flex justify-center items-center">
+              <h1 className="text-2xl font-bold text-gray-800 text-center">
+                Portal de Notícias
+              </h1>
+            </div>
             <button
               onClick={voltarPagina}
-              className="flex items-center space-x-2 text-gray-800 hover:text-gray-600 transition-colors"
+              className="absolute top-1/2 left-0 transform -translate-y-1/2 flex items-center space-x-2 text-gray-800 hover:text-gray-600 transition-colors"
             >
               <ArrowLeft size={20} />
               <span className="font-medium">Voltar</span>
             </button>
-            <h1 className="text-2xl font-bold text-gray-800">
-              Portal de Notícias
-            </h1>
             <div className="flex items-center space-x-3">
               <button
                 onClick={editarNoticia}

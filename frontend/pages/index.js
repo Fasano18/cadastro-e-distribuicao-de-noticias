@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
+import { X } from "lucide-react";
 
 // Dados fictícios das notícias (mantidos como fallback)
 const noticiasDataFallback = [
@@ -37,6 +38,25 @@ export default function PortalNoticias() {
   const [erro, setErro] = useState(null);
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [noticiasPorPagina] = useState(9);
+
+  // Estados para os modais de login e registro
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  
+  // Estados para os formulários
+  const [loginForm, setLoginForm] = useState({
+    email: "",
+    senha: ""
+  });
+  
+  const [registerForm, setRegisterForm] = useState({
+    nome: "",
+    email: "",
+    senha: "",
+    repetirSenha: ""
+  });
+  
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     const fetchNoticias = async () => {
@@ -106,6 +126,71 @@ export default function PortalNoticias() {
     return dataObj.toLocaleDateString("pt-BR");
   };
 
+  // Funções para lidar com os formulários
+  const handleLoginSubmit = (e) => {
+    e.preventDefault();
+    const errors = {};
+    
+    if (!loginForm.email) errors.email = "Email é obrigatório";
+    if (!loginForm.senha) errors.senha = "Senha é obrigatória";
+    
+    if (Object.keys(errors).length === 0) {
+      // Aqui você implementaria a lógica de login
+      console.log("Tentando fazer login:", loginForm);
+      alert("Funcionalidade de login será implementada!");
+      setShowLoginModal(false);
+      setLoginForm({ email: "", senha: "" });
+    } else {
+      setFormErrors(errors);
+    }
+  };
+
+  const handleRegisterSubmit = (e) => {
+    e.preventDefault();
+    const errors = {};
+    
+    if (!registerForm.nome) errors.nome = "Nome é obrigatório";
+    if (!registerForm.email) errors.email = "Email é obrigatório";
+    if (!registerForm.senha) errors.senha = "Senha é obrigatória";
+    if (!registerForm.repetirSenha) errors.repetirSenha = "Confirme a senha";
+    if (registerForm.senha !== registerForm.repetirSenha) {
+      errors.repetirSenha = "As senhas não coincidem";
+    }
+    
+    if (Object.keys(errors).length === 0) {
+      // Aqui você implementaria a lógica de registro
+      console.log("Tentando registrar:", registerForm);
+      alert("Funcionalidade de registro será implementada!");
+      setShowRegisterModal(false);
+      setRegisterForm({ nome: "", email: "", senha: "", repetirSenha: "" });
+    } else {
+      setFormErrors(errors);
+    }
+  };
+
+  const handleInputChange = (formType, field, value) => {
+    if (formType === 'login') {
+      setLoginForm(prev => ({ ...prev, [field]: value }));
+    } else {
+      setRegisterForm(prev => ({ ...prev, [field]: value }));
+    }
+    // Limpar erro do campo quando o usuário começar a digitar
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const closeModal = (modalType) => {
+    if (modalType === 'login') {
+      setShowLoginModal(false);
+      setLoginForm({ email: "", senha: "" });
+    } else {
+      setShowRegisterModal(false);
+      setRegisterForm({ nome: "", email: "", senha: "", repetirSenha: "" });
+    }
+    setFormErrors({});
+  };
+
   // Loading state
   if (carregando) {
     return (
@@ -132,20 +217,63 @@ export default function PortalNoticias() {
         <header className="bg-yellow-400 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 py-6">
             {/* Container para título e botão */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="relative w-full mb-4">
               {/* Título centralizado */}
-              <div className="flex-1 text-center">
-                <h1 className="text-4xl font-bold text-gray-800">
+              <div className="flex justify-center items-center">
+                <h1 className="text-4xl font-bold text-gray-800 text-center">
                   Portal de Notícias
                 </h1>
               </div>
 
-              {/* Botão Nova Notícia */}
-              <div className="flex-shrink-0">
+              {/* Botões de Ação - posicionados absolutamente à direita */}
+              <div className="absolute top-1/2 right-0 transform -translate-y-1/2 flex items-center gap-2">
+                {/* Botão Iniciar Sessão */}
+                <button 
+                  onClick={() => setShowLoginModal(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg text-sm"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                    />
+                  </svg>
+                  Iniciar Sessão
+                </button>
+
+                {/* Botão Registrar */}
+                <button 
+                  onClick={() => setShowRegisterModal(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg text-sm"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                    />
+                  </svg>
+                  Registrar
+                </button>
+
+                {/* Botão Nova Notícia */}
                 <Link href="/criar-noticia">
-                  <button className="bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2 shadow-md hover:shadow-lg">
+                  <button className="bg-gray-800 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg text-sm">
                     <svg
-                      className="w-5 h-5"
+                      className="w-4 h-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -333,6 +461,172 @@ export default function PortalNoticias() {
             </div>
           </div>
         </footer>
+
+        {/* Modal de Login */}
+        {showLoginModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">Iniciar Sessão</h2>
+                <button
+                  onClick={() => closeModal('login')}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={handleLoginSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="login-email"
+                    value={loginForm.email}
+                    onChange={(e) => handleInputChange('login', 'email', e.target.value)}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      formErrors.email ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Seu email"
+                  />
+                  {formErrors.email && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="login-senha" className="block text-sm font-medium text-gray-700 mb-1">
+                    Senha
+                  </label>
+                  <input
+                    type="password"
+                    id="login-senha"
+                    value={loginForm.senha}
+                    onChange={(e) => handleInputChange('login', 'senha', e.target.value)}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      formErrors.senha ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Sua senha"
+                  />
+                  {formErrors.senha && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.senha}</p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                >
+                  Entrar
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Registro */}
+        {showRegisterModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">Criar Conta</h2>
+                <button
+                  onClick={() => closeModal('register')}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={handleRegisterSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="register-nome" className="block text-sm font-medium text-gray-700 mb-1">
+                    Nome Completo
+                  </label>
+                  <input
+                    type="text"
+                    id="register-nome"
+                    value={registerForm.nome}
+                    onChange={(e) => handleInputChange('register', 'nome', e.target.value)}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                      formErrors.nome ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Seu nome completo"
+                  />
+                  {formErrors.nome && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.nome}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="register-email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="register-email"
+                    value={registerForm.email}
+                    onChange={(e) => handleInputChange('register', 'email', e.target.value)}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                      formErrors.email ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Seu email"
+                  />
+                  {formErrors.email && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="register-senha" className="block text-sm font-medium text-gray-700 mb-1">
+                    Senha
+                  </label>
+                  <input
+                    type="password"
+                    id="register-senha"
+                    value={registerForm.senha}
+                    onChange={(e) => handleInputChange('register', 'senha', e.target.value)}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                      formErrors.senha ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Sua senha"
+                  />
+                  {formErrors.senha && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.senha}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="register-repetir-senha" className="block text-sm font-medium text-gray-700 mb-1">
+                    Confirmar Senha
+                  </label>
+                  <input
+                    type="password"
+                    id="register-repetir-senha"
+                    value={registerForm.repetirSenha}
+                    onChange={(e) => handleInputChange('register', 'repetirSenha', e.target.value)}
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                      formErrors.repetirSenha ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Confirme sua senha"
+                  />
+                  {formErrors.repetirSenha && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.repetirSenha}</p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                >
+                  Criar Conta
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
