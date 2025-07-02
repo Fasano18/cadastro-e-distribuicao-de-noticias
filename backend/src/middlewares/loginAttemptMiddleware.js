@@ -1,19 +1,22 @@
-const LoginAttempt = require('../models/loginAttemptModel');
-const moment = require('moment');
+const LoginAttempt = require("../models/loginAttemptModel");
+const moment = require("moment");
 
 const MAX_ATTEMPTS = 10;
-const BLOCK_TIME = 15;  // minutes
+const BLOCK_TIME = 15;
 
 const checkLoginAttempts = async (req, res, next) => {
-  const ip = req.ip;  
-
+  const ip = req.ip;
 
   const attempt = await LoginAttempt.findOne({ ipAddress: ip });
 
   if (attempt) {
     const blockedUntil = attempt.blockedUntil;
     if (blockedUntil && moment().isBefore(moment(blockedUntil))) {
-      return res.status(403).json({ message: `Your IP is temporarily blocked. Please try again after ${BLOCK_TIME} minutes.` });
+      return res
+        .status(403)
+        .json({
+          message: `Your IP is temporarily blocked. Please try again after ${BLOCK_TIME} minutes.`,
+        });
     }
   }
 
@@ -25,21 +28,24 @@ const incrementLoginAttempts = async (req, res, next) => {
   const attempt = await LoginAttempt.findOne({ ipAddress: ip });
 
   if (attempt) {
-    const isBlocked = attempt.blockedUntil && moment().isBefore(moment(attempt.blockedUntil));
-    
+    const isBlocked =
+      attempt.blockedUntil && moment().isBefore(moment(attempt.blockedUntil));
+
     if (isBlocked) {
-      return res.status(403).json({ message: 'Your IP is temporarily blocked.' });
+      return res
+        .status(403)
+        .json({ message: "Your IP is temporarily blocked." });
     }
 
-    if (moment().diff(moment(attempt.lastAttempt), 'minutes') > BLOCK_TIME) {
-      attempt.attempts = 0; 
+    if (moment().diff(moment(attempt.lastAttempt), "minutes") > BLOCK_TIME) {
+      attempt.attempts = 0;
     }
 
     attempt.attempts += 1;
     attempt.lastAttempt = Date.now();
 
     if (attempt.attempts >= MAX_ATTEMPTS) {
-      attempt.blockedUntil = moment().add(BLOCK_TIME, 'minutes'); 
+      attempt.blockedUntil = moment().add(BLOCK_TIME, "minutes");
     }
 
     await attempt.save();

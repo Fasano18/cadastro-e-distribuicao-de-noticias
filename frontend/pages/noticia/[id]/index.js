@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { jwtDecode } from "jwt-decode";
 import {
   ArrowLeft,
   Calendar,
@@ -16,10 +17,10 @@ export default function DetalhesNoticia() {
   const [noticiasRelacionadas, setNoticiasRelacionadas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [usuario, setUsuario] = useState(null);
   const router = useRouter();
   const { id } = router.query;
 
-  // Função para buscar uma notícia específica
   const buscarNoticia = async (noticiaId) => {
     try {
       const response = await fetch(`http://localhost:5001/news/${noticiaId}`);
@@ -29,7 +30,6 @@ export default function DetalhesNoticia() {
       const data = await response.json();
       console.log("Notícia da API:", data);
 
-      // A API retorna a notícia dentro do campo 'news'
       return data.news;
     } catch (error) {
       console.error("Erro ao buscar notícia:", error);
@@ -37,7 +37,6 @@ export default function DetalhesNoticia() {
     }
   };
 
-  // Função para buscar notícias relacionadas por tema ou categoria
   const buscarNoticiasRelacionadas = async (noticiaAtual) => {
     try {
       const response = await fetch("http://localhost:5001/news");
@@ -49,8 +48,6 @@ export default function DetalhesNoticia() {
       const data = await response.json();
       console.log("Notícias relacionadas da API:", data);
 
-      // A API pode retornar um array diretamente ou dentro de um campo
-      // Verifica se tem campo 'news' ou se é um array direto
       let noticias = [];
       if (Array.isArray(data)) {
         noticias = data;
@@ -60,7 +57,6 @@ export default function DetalhesNoticia() {
         noticias = data.data;
       }
 
-      // Filtra notícias relacionadas por tema ou categoria, excluindo a atual
       const relacionadas = noticias
         .filter((noticia) => {
           return (
@@ -71,7 +67,6 @@ export default function DetalhesNoticia() {
         })
         .slice(0, 3);
 
-      // Se não encontrar por tema/categoria, pega as 3 mais recentes
       if (relacionadas.length === 0) {
         return noticias
           .filter((noticia) => noticia._id !== noticiaAtual._id)
@@ -88,7 +83,25 @@ export default function DetalhesNoticia() {
     }
   };
 
-  // Carrega os dados quando o componente é montado ou o ID muda
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUsuario({
+          nome: decoded.username || decoded.email,
+          isAdmin: decoded.isAdmin,
+          ...decoded,
+        });
+      } catch (error) {
+        console.error("Erro ao decodificar o token:", error);
+        setUsuario(null);
+      }
+    } else {
+      setUsuario(null);
+    }
+  }, []);
+
   useEffect(() => {
     if (!id) return;
 
@@ -97,11 +110,9 @@ export default function DetalhesNoticia() {
         setLoading(true);
         setError(null);
 
-        // Busca a notícia principal primeiro
         const noticiaData = await buscarNoticia(id);
         setNoticia(noticiaData);
 
-        // Depois busca as relacionadas baseadas na notícia atual
         const relacionadasData = await buscarNoticiasRelacionadas(noticiaData);
         setNoticiasRelacionadas(relacionadasData);
       } catch (error) {
@@ -158,7 +169,6 @@ export default function DetalhesNoticia() {
   };
 
   const excluirNoticia = async () => {
-    // Confirma se o usuário realmente deseja excluir
     if (
       !confirm(
         "Tem certeza que deseja excluir esta notícia? Esta ação não pode ser desfeita."
@@ -170,13 +180,15 @@ export default function DetalhesNoticia() {
     try {
       const response = await fetch(`http://localhost:5001/news/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
       });
 
       if (!response.ok) {
         throw new Error(`Erro ao excluir notícia: ${response.status}`);
       }
 
-      // Se a exclusão foi bem-sucedida, redireciona para a página anterior
       alert("Notícia excluída com sucesso!");
       router.back();
     } catch (error) {
@@ -189,7 +201,6 @@ export default function DetalhesNoticia() {
     router.push(`/noticia/${noticiaId}`);
   };
 
-  // Estados de loading e erro
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -235,43 +246,46 @@ export default function DetalhesNoticia() {
       </div>
     );
   }
-
+  console.log("passou usuario carregada:", usuario);
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-yellow-400 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="relative w-full">
-            <div className="flex justify-center items-center">
-              <h1 className="text-2xl font-bold text-gray-800 text-center">
-                Portal de Notícias
-              </h1>
-            </div>
+          <div className="flex justify-between items-center">
             <button
               onClick={voltarPagina}
-              className="absolute top-1/2 left-0 transform -translate-y-1/2 flex items-center space-x-2 text-gray-800 hover:text-gray-600 transition-colors"
+              className="flex items-center space-x-2 text-gray-800 hover:text-gray-600 transition-colors"
             >
               <ArrowLeft size={20} />
               <span className="font-medium">Voltar</span>
             </button>
+
+            <h1 className="text-2xl font-bold text-gray-800 text-center">
+              Portal de Notícias
+            </h1>
+
             <div className="flex items-center space-x-3">
-              <button
-                onClick={editarNoticia}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Edit3 size={16} />
-                <span>Editar</span>
-              </button>
-              <button
-                onClick={excluirNoticia}
-                className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-              >
-                <Trash2 size={16} />
-                <span>Excluir</span>
-              </button>
+              {usuario && usuario.isAdmin && (
+                <>
+                  <button
+                    onClick={editarNoticia}
+                    className="flex items-center space-x-2 bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Edit3 size={16} />
+                    <span>Editar</span>
+                  </button>
+                  <button
+                    onClick={excluirNoticia}
+                    className="flex items-center space-x-2 bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <Trash2 size={16} />
+                    <span>Excluir</span>
+                  </button>
+                </>
+              )}
               <button
                 onClick={compartilhar}
-                className="flex items-center space-x-2 bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                className="flex items-center space-x-2 bg-gray-800 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700 transition-colors"
               >
                 <Share2 size={16} />
                 <span>Compartilhar</span>
@@ -281,7 +295,6 @@ export default function DetalhesNoticia() {
         </div>
       </header>
 
-      {/* Conteúdo Principal */}
       <main className="max-w-4xl mx-auto px-4 py-8">
         <article className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="p-8">
@@ -300,7 +313,6 @@ export default function DetalhesNoticia() {
               </div>
             </div>
 
-            {/* Localização */}
             {noticia.local && formatarLocalizacao(noticia.local) && (
               <div className="flex items-center text-gray-500 text-sm mb-4">
                 <MapPin size={16} className="mr-1" />
@@ -336,7 +348,6 @@ export default function DetalhesNoticia() {
             </div>
           </div>
 
-          {/* Imagem */}
           {noticia.imagem && (
             <div className="px-8 mb-8">
               <img
@@ -364,7 +375,6 @@ export default function DetalhesNoticia() {
           </div>
         </article>
 
-        {/* Notícias Relacionadas */}
         {noticiasRelacionadas.length > 0 && (
           <section className="mt-12">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
@@ -414,7 +424,6 @@ export default function DetalhesNoticia() {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="bg-gray-800 text-white py-8 mt-12">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center">

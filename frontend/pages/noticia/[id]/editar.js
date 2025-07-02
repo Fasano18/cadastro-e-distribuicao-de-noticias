@@ -5,17 +5,15 @@ import { useRouter } from "next/router";
 
 export default function EditarNoticia() {
   const router = useRouter();
-  const { id } = router.query; // ID da notícia vindo da URL
+  const { id } = router.query;
 
   const [enviando, setEnviando] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [mensagem, setMensagem] = useState({ tipo: "", texto: "" });
 
-  // Estado para controlar o popup de erro
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Estado do formulário
   const [formData, setFormData] = useState({
     tema: "",
     titulo: "",
@@ -30,31 +28,25 @@ export default function EditarNoticia() {
     dataPublicacao: "",
   });
 
-  // Função para mostrar popup de erro
   const mostrarErroPopup = (mensagem) => {
     setErrorMessage(mensagem);
     setShowErrorPopup(true);
   };
 
-  // Função para fechar popup de erro
   const fecharErroPopup = () => {
     setShowErrorPopup(false);
     setErrorMessage("");
   };
 
-  // Função para validar e limpar URL da imagem
   const validarUrlImagem = (url) => {
     if (!url || url.trim() === "") return "";
 
-    // Se a URL contém redirecionamentos do Google, não usar
     if (url.includes("google.com/url") || url.includes("redirect")) {
       return "";
     }
 
-    // Verificar se é uma URL válida de imagem
     const urlPattern = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i;
     if (!urlPattern.test(url)) {
-      // Se não termina com extensão comum de imagem, tentar validar se é uma URL válida
       try {
         new URL(url);
         return url;
@@ -66,7 +58,6 @@ export default function EditarNoticia() {
     return url;
   };
 
-  // Função para carregar dados da notícia
   const carregarNoticia = async () => {
     if (!id) return;
 
@@ -81,7 +72,6 @@ export default function EditarNoticia() {
       const data = await response.json();
       const noticia = data.news;
 
-      // Preencher o formulário com os dados existentes
       setFormData({
         tema: noticia.tema || "",
         titulo: noticia.titulo || "",
@@ -103,12 +93,10 @@ export default function EditarNoticia() {
     }
   };
 
-  // Carregar dados da notícia quando o componente montar
   useEffect(() => {
     carregarNoticia();
   }, [id]);
 
-  // Opções para os selects
   const categorias = [
     "Tecnologia",
     "Economia",
@@ -168,7 +156,6 @@ export default function EditarNoticia() {
     "TO",
   ];
 
-  // Função para lidar com mudanças nos inputs
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -177,7 +164,6 @@ export default function EditarNoticia() {
     }));
   };
 
-  // Função para validar formulário
   const validarFormulario = () => {
     const camposObrigatorios = [
       "tema",
@@ -203,7 +189,6 @@ export default function EditarNoticia() {
     return true;
   };
 
-  // Função para enviar o formulário
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validarFormulario()) {
@@ -214,13 +199,11 @@ export default function EditarNoticia() {
     setMensagem({ tipo: "", texto: "" });
 
     try {
-      // Validar e preparar URL da imagem
       const imagemValidada = validarUrlImagem(formData.imagem);
       const imagemFinal =
         imagemValidada ||
         "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&h=250&fit=crop";
 
-      // Preparar dados para envio
       const dadosEnvio = {
         tema: formData.tema,
         titulo: formData.titulo,
@@ -239,12 +222,12 @@ export default function EditarNoticia() {
 
       console.log("Dados sendo enviados:", dadosEnvio);
 
-      // Fazer a requisição PUT
       const response = await fetch(`http://localhost:5001/news/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
         },
         body: JSON.stringify(dadosEnvio),
       });
@@ -265,10 +248,9 @@ export default function EditarNoticia() {
         texto: "Notícia atualizada com sucesso!",
       });
 
-      // Redirecionar após 2 segundos
       setTimeout(() => {
         router.push("/");
-      }, 2000);
+      }, 500);
     } catch (error) {
       console.error("Erro completo:", error);
 
@@ -288,7 +270,6 @@ export default function EditarNoticia() {
     }
   };
 
-  // Mostrar loading enquanto carrega os dados
   if (carregando) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -310,7 +291,6 @@ export default function EditarNoticia() {
       </Head>
 
       <div className="min-h-screen bg-gray-50">
-        {/* Popup de Erro */}
         {showErrorPopup && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
@@ -355,7 +335,6 @@ export default function EditarNoticia() {
           </div>
         )}
 
-        {/* Header */}
         <header className="bg-blue-500 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 py-6">
             <div className="relative flex items-center justify-center">
@@ -382,9 +361,7 @@ export default function EditarNoticia() {
           </div>
         </header>
 
-        {/* Conteúdo Principal */}
         <main className="max-w-4xl mx-auto px-4 py-8">
-          {/* Mensagens de feedback */}
           {mensagem.texto && (
             <div
               className={`mb-6 p-4 rounded-lg ${
@@ -397,10 +374,8 @@ export default function EditarNoticia() {
             </div>
           )}
 
-          {/* Formulário */}
           <div className="bg-white rounded-lg shadow-md p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Linha 1: Tema e Categoria */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label
@@ -451,7 +426,6 @@ export default function EditarNoticia() {
                 </div>
               </div>
 
-              {/* Título */}
               <div>
                 <label
                   htmlFor="titulo"
@@ -471,7 +445,6 @@ export default function EditarNoticia() {
                 />
               </div>
 
-              {/* Subtítulo */}
               <div>
                 <label
                   htmlFor="subtitulo"
@@ -491,7 +464,6 @@ export default function EditarNoticia() {
                 />
               </div>
 
-              {/* Descrição */}
               <div>
                 <label
                   htmlFor="descricao"
@@ -511,7 +483,6 @@ export default function EditarNoticia() {
                 />
               </div>
 
-              {/* Autor */}
               <div>
                 <label
                   htmlFor="autor"
@@ -531,7 +502,6 @@ export default function EditarNoticia() {
                 />
               </div>
 
-              {/* Localização */}
               <div>
                 <h3 className="text-lg font-medium text-gray-800 mb-4">
                   Localização
@@ -600,7 +570,6 @@ export default function EditarNoticia() {
                 </div>
               </div>
 
-              {/* URL da Imagem */}
               <div>
                 <label
                   htmlFor="imagem"
@@ -623,7 +592,6 @@ export default function EditarNoticia() {
                 </p>
               </div>
 
-              {/* Preview da Imagem */}
               {formData.imagem && validarUrlImagem(formData.imagem) && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -640,7 +608,6 @@ export default function EditarNoticia() {
                 </div>
               )}
 
-              {/* Aviso se URL da imagem for inválida */}
               {formData.imagem && !validarUrlImagem(formData.imagem) && (
                 <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-sm text-yellow-800">
@@ -650,7 +617,6 @@ export default function EditarNoticia() {
                 </div>
               )}
 
-              {/* Botões */}
               <div className="flex gap-4 pt-6">
                 <button
                   type="submit"
@@ -683,7 +649,6 @@ export default function EditarNoticia() {
           </div>
         </main>
 
-        {/* Footer */}
         <footer className="bg-gray-800 text-white py-8 mt-12">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center">

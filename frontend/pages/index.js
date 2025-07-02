@@ -4,35 +4,6 @@ import Link from "next/link";
 import { jwtDecode } from "jwt-decode";
 import { X } from "lucide-react";
 
-// Dados fictícios das notícias (mantidos como fallback)
-const noticiasDataFallback = [
-  {
-    id: 1,
-    titulo: "Nova tecnologia revoluciona o mercado brasileiro",
-    preview:
-      "Startup brasileira desenvolve solução inovadora que promete transformar a forma como empresas gerenciam seus dados...",
-    conteudo:
-      "Uma startup brasileira baseada em São Paulo desenvolveu uma solução revolucionária que promete transformar completamente a forma como empresas de médio e grande porte gerenciam seus dados. A tecnologia, que utiliza inteligência artificial avançada e algoritmos de machine learning, permite processar grandes volumes de informações em tempo real, oferecendo insights precisos para tomadas de decisão estratégicas. Segundo os desenvolvedores, a solução já está sendo testada por mais de 50 empresas nacionais, com resultados que mostram um aumento de até 40% na eficiência operacional. A expectativa é que a tecnologia seja lançada oficialmente no mercado ainda neste ano, com planos de expansão para outros países da América Latina.",
-    imagem:
-      "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=250&fit=crop",
-    dataPublicacao: "2025-06-13",
-    categoria: "Tecnologia",
-  },
-  {
-    id: 2,
-    titulo: "Economia brasileira mostra sinais de recuperação",
-    preview:
-      "Indicadores econômicos apontam para crescimento no setor de serviços e indústria no primeiro trimestre de 2025...",
-    conteudo:
-      "Os indicadores econômicos do primeiro trimestre de 2025 revelam sinais consistentes de recuperação da economia brasileira. O setor de serviços registrou crescimento de 3,2% em relação ao mesmo período do ano anterior, enquanto a indústria apresentou alta de 2,8%. O mercado de trabalho também demonstra melhoria, com a taxa de desemprego caindo para 8,9%, o menor índice dos últimos três anos. Especialistas atribuem essa recuperação às políticas de estímulo econômico implementadas pelo governo e ao aumento da confiança dos consumidores e investidores.",
-    imagem:
-      "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=250&fit=crop",
-    dataPublicacao: "2025-06-12",
-    categoria: "Economia",
-  },
-  // ... outros itens de fallback podem ser mantidos se necessário
-];
-
 export default function PortalNoticias() {
   const [noticias, setNoticias] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -40,29 +11,25 @@ export default function PortalNoticias() {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [noticiasPorPagina] = useState(9);
 
-  // Estados para os modais de login e registro
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
-  
-  // Estados para os formulários
+
   const [loginForm, setLoginForm] = useState({
     email: "",
-    senha: ""
+    senha: "",
   });
-  
+
   const [registerForm, setRegisterForm] = useState({
     nome: "",
     email: "",
     senha: "",
-    repetirSenha: ""
+    repetirSenha: "",
   });
-  
+
   const [formErrors, setFormErrors] = useState({});
 
-  // Estado de autenticação
   const [usuario, setUsuario] = useState(null);
 
-  // Checar token ao carregar a página para persistir login
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -70,7 +37,7 @@ export default function PortalNoticias() {
         const decoded = jwtDecode(token);
         setUsuario({
           nome: decoded.username || decoded.email,
-          ...decoded
+          ...decoded,
         });
       } catch {
         setUsuario(null);
@@ -94,18 +61,14 @@ export default function PortalNoticias() {
         const data = await response.json();
         console.log("Notícias da API:", data);
 
-        // Se a API retornar dados válidos, use-os, senão use o fallback
         if (data.news && Array.isArray(data.news) && data.news.length > 0) {
           setNoticias(data.news);
         } else {
           console.warn("API retornou dados vazios, usando fallback");
-          setNoticias(noticiasDataFallback);
         }
       } catch (error) {
         console.error("Erro ao buscar notícias:", error);
         setErro(error.message);
-        // Em caso de erro, usar dados de fallback
-        setNoticias(noticiasDataFallback);
       } finally {
         setCarregando(false);
       }
@@ -114,7 +77,6 @@ export default function PortalNoticias() {
     fetchNoticias();
   }, []);
 
-  // Calcular notícias da página atual
   const indexUltimaNoticia = paginaAtual * noticiasPorPagina;
   const indexPrimeiraNoticia = indexUltimaNoticia - noticiasPorPagina;
   const noticiasAtuais = noticias.slice(
@@ -122,10 +84,8 @@ export default function PortalNoticias() {
     indexUltimaNoticia
   );
 
-  // Calcular total de páginas
   const totalPaginas = Math.ceil(noticias.length / noticiasPorPagina);
 
-  // Funções de paginação
   const proximaPagina = () => {
     if (paginaAtual < totalPaginas) {
       setPaginaAtual(paginaAtual + 1);
@@ -142,13 +102,11 @@ export default function PortalNoticias() {
     setPaginaAtual(numeroPagina);
   };
 
-  // Função para formatar data
   const formatarData = (data) => {
     const dataObj = new Date(data);
     return dataObj.toLocaleDateString("pt-BR");
   };
 
-  // Funções para lidar com os formulários
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     const errors = {};
@@ -159,7 +117,10 @@ export default function PortalNoticias() {
         const res = await fetch("http://localhost:5001/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: loginForm.email, password: loginForm.senha })
+          body: JSON.stringify({
+            email: loginForm.email,
+            password: loginForm.senha,
+          }),
         });
         const data = await res.json();
         if (res.ok && data.token) {
@@ -199,7 +160,12 @@ export default function PortalNoticias() {
         const res = await fetch("http://localhost:5001/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: registerForm.nome, email: registerForm.email, password: registerForm.senha })
+          body: JSON.stringify({
+            username: registerForm.nome,
+            email: registerForm.email,
+            password: registerForm.senha,
+            isAdmin: false,
+          }),
         });
         const data = await res.json();
         if (res.ok) {
@@ -218,19 +184,19 @@ export default function PortalNoticias() {
   };
 
   const handleInputChange = (formType, field, value) => {
-    if (formType === 'login') {
-      setLoginForm(prev => ({ ...prev, [field]: value }));
+    if (formType === "login") {
+      setLoginForm((prev) => ({ ...prev, [field]: value }));
     } else {
-      setRegisterForm(prev => ({ ...prev, [field]: value }));
+      setRegisterForm((prev) => ({ ...prev, [field]: value }));
     }
-    // Limpar erro do campo quando o usuário começar a digitar
+
     if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: "" }));
+      setFormErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const closeModal = (modalType) => {
-    if (modalType === 'login') {
+    if (modalType === "login") {
       setShowLoginModal(false);
       setLoginForm({ email: "", senha: "" });
     } else {
@@ -240,13 +206,11 @@ export default function PortalNoticias() {
     setFormErrors({});
   };
 
-  // Função de logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     setUsuario(null);
   };
 
-  // Loading state
   if (carregando) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -268,29 +232,32 @@ export default function PortalNoticias() {
       </Head>
 
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
         <header className="bg-yellow-400 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 py-6">
-            {/* Container para título e botão */}
             <div className="relative w-full mb-4">
-              {/* Título centralizado */}
               <div className="flex justify-center items-center">
                 <h1 className="text-4xl font-bold text-gray-800 text-center">
                   Portal de Notícias
                 </h1>
               </div>
 
-              {/* Botões de Ação - posicionados absolutamente à direita */}
               <div className="absolute top-1/2 right-0 transform -translate-y-1/2 flex items-center gap-2">
                 {usuario && (usuario.nome || usuario.email) && (
                   <>
-                    <span className="mr-2 text-gray-800 font-medium">Bem-vindo, {usuario.nome || usuario.email}</span>
-                    <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-3 rounded-md text-sm transition-colors">Sair</button>
+                    <span className="mr-2 text-gray-800 font-medium">
+                      Bem-vindo, {usuario.nome || usuario.email}
+                    </span>
+                    <button
+                      onClick={handleLogout}
+                      className="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-3 rounded-md text-sm transition-colors"
+                    >
+                      Sair
+                    </button>
                   </>
                 )}
                 {!usuario && (
                   <>
-                    <button 
+                    <button
                       onClick={() => setShowLoginModal(true)}
                       className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg text-sm"
                     >
@@ -309,7 +276,7 @@ export default function PortalNoticias() {
                       </svg>
                       Iniciar Sessão
                     </button>
-                    <button 
+                    <button
                       onClick={() => setShowRegisterModal(true)}
                       className="bg-green-600 hover:bg-green-700 text-white font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg text-sm"
                     >
@@ -330,33 +297,33 @@ export default function PortalNoticias() {
                     </button>
                   </>
                 )}
-                <Link href="/criar-noticia">
-                  <button className="bg-gray-800 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg text-sm">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                    Nova Notícia
-                  </button>
-                </Link>
+                {usuario && usuario.isAdmin && (
+                  <Link href="/criar-noticia">
+                    <button className="bg-gray-800 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg text-sm">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                      Nova Notícia
+                    </button>
+                  </Link>
+                )}
               </div>
             </div>
 
-            {/* Subtítulo */}
             <p className="text-center text-gray-700">
               Suas notícias em primeira mão
             </p>
 
-            {/* Mensagem de erro da API */}
             {erro && (
               <div className="mt-2 text-center">
                 <span className="text-red-600 text-sm bg-red-100 px-3 py-1 rounded">
@@ -367,9 +334,7 @@ export default function PortalNoticias() {
           </div>
         </header>
 
-        {/* Conteúdo Principal */}
         <main className="max-w-7xl mx-auto px-4 py-8">
-          {/* Verificar se há notícias */}
           {noticias.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-600 text-lg">
@@ -378,14 +343,12 @@ export default function PortalNoticias() {
             </div>
           ) : (
             <>
-              {/* Grid de Notícias */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                 {noticiasAtuais.map((noticia) => (
                   <article
                     key={noticia._id}
                     className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
                   >
-                    {/* Imagem */}
                     <Link href={`/noticia/${noticia._id}`}>
                       <div className="h-48 overflow-hidden cursor-pointer">
                         <img
@@ -403,9 +366,7 @@ export default function PortalNoticias() {
                       </div>
                     </Link>
 
-                    {/* Conteúdo do Card */}
                     <div className="p-6">
-                      {/* Categoria e Data */}
                       <div className="flex justify-between items-center mb-3">
                         <span className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded">
                           {noticia.categoria || "Geral"}
@@ -415,20 +376,17 @@ export default function PortalNoticias() {
                         </span>
                       </div>
 
-                      {/* Título */}
                       <Link href={`/noticia/${noticia._id}`}>
                         <h2 className="text-xl font-bold text-gray-800 mb-3 line-clamp-2 hover:text-yellow-600 transition-colors cursor-pointer">
                           {noticia.titulo}
                         </h2>
                       </Link>
 
-                      {/* Preview */}
                       <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
                         {noticia.subtitulo ||
                           noticia.descricao?.substring(0, 150) + "..."}
                       </p>
 
-                      {/* Link Leia Mais */}
                       <div className="mt-4">
                         <Link href={`/noticia/${noticia._id}`}>
                           <span className="text-yellow-600 hover:text-yellow-800 font-medium text-sm cursor-pointer">
@@ -441,11 +399,9 @@ export default function PortalNoticias() {
                 ))}
               </div>
 
-              {/* Sistema de Paginação */}
               {totalPaginas > 1 && (
                 <>
                   <div className="flex justify-center items-center space-x-2">
-                    {/* Botão Anterior */}
                     <button
                       onClick={paginaAnterior}
                       disabled={paginaAtual === 1}
@@ -458,7 +414,6 @@ export default function PortalNoticias() {
                       ← Anterior
                     </button>
 
-                    {/* Números das Páginas */}
                     <div className="flex space-x-1">
                       {Array.from({ length: totalPaginas }, (_, index) => (
                         <button
@@ -475,7 +430,6 @@ export default function PortalNoticias() {
                       ))}
                     </div>
 
-                    {/* Botão Próximo */}
                     <button
                       onClick={proximaPagina}
                       disabled={paginaAtual === totalPaginas}
@@ -489,7 +443,6 @@ export default function PortalNoticias() {
                     </button>
                   </div>
 
-                  {/* Informação da Paginação */}
                   <div className="text-center mt-4 text-gray-600">
                     Mostrando {indexPrimeiraNoticia + 1} a{" "}
                     {Math.min(indexUltimaNoticia, noticias.length)} de{" "}
@@ -501,7 +454,6 @@ export default function PortalNoticias() {
           )}
         </main>
 
-        {/* Footer */}
         <footer className="bg-gray-800 text-white py-8 mt-12">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center">
@@ -522,14 +474,15 @@ export default function PortalNoticias() {
           </div>
         </footer>
 
-        {/* Modal de Login */}
         {showLoginModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Iniciar Sessão</h2>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Iniciar Sessão
+                </h2>
                 <button
-                  onClick={() => closeModal('login')}
+                  onClick={() => closeModal("login")}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <X size={24} />
@@ -537,42 +490,60 @@ export default function PortalNoticias() {
               </div>
 
               <form onSubmit={handleLoginSubmit} className="space-y-4">
-                {formErrors.geral && (<p className="text-red-500 text-sm mb-2">{formErrors.geral}</p>)}
+                {formErrors.geral && (
+                  <p className="text-red-500 text-sm mb-2">
+                    {formErrors.geral}
+                  </p>
+                )}
                 <div>
-                  <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="login-email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Email
                   </label>
                   <input
                     type="email"
                     id="login-email"
                     value={loginForm.email}
-                    onChange={(e) => handleInputChange('login', 'email', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("login", "email", e.target.value)
+                    }
                     className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      formErrors.email ? 'border-red-500' : 'border-gray-300'
+                      formErrors.email ? "border-red-500" : "border-gray-300"
                     }`}
                     placeholder="Seu email"
                   />
                   {formErrors.email && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {formErrors.email}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="login-senha" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="login-senha"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Senha
                   </label>
                   <input
                     type="password"
                     id="login-senha"
                     value={loginForm.senha}
-                    onChange={(e) => handleInputChange('login', 'senha', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("login", "senha", e.target.value)
+                    }
                     className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      formErrors.senha ? 'border-red-500' : 'border-gray-300'
+                      formErrors.senha ? "border-red-500" : "border-gray-300"
                     }`}
                     placeholder="Sua senha"
                   />
                   {formErrors.senha && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.senha}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {formErrors.senha}
+                    </p>
                   )}
                 </div>
 
@@ -587,14 +558,15 @@ export default function PortalNoticias() {
           </div>
         )}
 
-        {/* Modal de Registro */}
         {showRegisterModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Criar Conta</h2>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Criar Conta
+                </h2>
                 <button
-                  onClick={() => closeModal('register')}
+                  onClick={() => closeModal("register")}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <X size={24} />
@@ -602,80 +574,118 @@ export default function PortalNoticias() {
               </div>
 
               <form onSubmit={handleRegisterSubmit} className="space-y-4">
-                {formErrors.geral && (<p className="text-red-500 text-sm mb-2">{formErrors.geral}</p>)}
+                {formErrors.geral && (
+                  <p className="text-red-500 text-sm mb-2">
+                    {formErrors.geral}
+                  </p>
+                )}
                 <div>
-                  <label htmlFor="register-nome" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="register-nome"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Nome Completo
                   </label>
                   <input
                     type="text"
                     id="register-nome"
                     value={registerForm.nome}
-                    onChange={(e) => handleInputChange('register', 'nome', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("register", "nome", e.target.value)
+                    }
                     className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      formErrors.nome ? 'border-red-500' : 'border-gray-300'
+                      formErrors.nome ? "border-red-500" : "border-gray-300"
                     }`}
                     placeholder="Seu nome completo"
                   />
                   {formErrors.nome && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.nome}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {formErrors.nome}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="register-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="register-email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Email
                   </label>
                   <input
                     type="email"
                     id="register-email"
                     value={registerForm.email}
-                    onChange={(e) => handleInputChange('register', 'email', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("register", "email", e.target.value)
+                    }
                     className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      formErrors.email ? 'border-red-500' : 'border-gray-300'
+                      formErrors.email ? "border-red-500" : "border-gray-300"
                     }`}
                     placeholder="Seu email"
                   />
                   {formErrors.email && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {formErrors.email}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="register-senha" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="register-senha"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Senha
                   </label>
                   <input
                     type="password"
                     id="register-senha"
                     value={registerForm.senha}
-                    onChange={(e) => handleInputChange('register', 'senha', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("register", "senha", e.target.value)
+                    }
                     className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      formErrors.senha ? 'border-red-500' : 'border-gray-300'
+                      formErrors.senha ? "border-red-500" : "border-gray-300"
                     }`}
                     placeholder="Sua senha"
                   />
                   {formErrors.senha && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.senha}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {formErrors.senha}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="register-repetir-senha" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="register-repetir-senha"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Confirmar Senha
                   </label>
                   <input
                     type="password"
                     id="register-repetir-senha"
                     value={registerForm.repetirSenha}
-                    onChange={(e) => handleInputChange('register', 'repetirSenha', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "register",
+                        "repetirSenha",
+                        e.target.value
+                      )
+                    }
                     className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      formErrors.repetirSenha ? 'border-red-500' : 'border-gray-300'
+                      formErrors.repetirSenha
+                        ? "border-red-500"
+                        : "border-gray-300"
                     }`}
                     placeholder="Confirme sua senha"
                   />
                   {formErrors.repetirSenha && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.repetirSenha}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {formErrors.repetirSenha}
+                    </p>
                   )}
                 </div>
 

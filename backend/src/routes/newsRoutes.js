@@ -8,7 +8,6 @@ const {
     adminMiddleware
 } = require('../middlewares/authMiddleware');
 
-// Protected routes for admins
 router.post('/', authMiddleware, adminMiddleware, newsController.insert, responseFormatter);
 router.put('/:id', authMiddleware, adminMiddleware, newsController.update, responseFormatter);
 router.delete('/:id', authMiddleware, adminMiddleware, newsController.remove, responseFormatter);
