@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
+import { jwtDecode } from "jwt-decode";
 import { X } from "lucide-react";
 
 // Dados fictícios das notícias (mantidos como fallback)
@@ -57,6 +58,27 @@ export default function PortalNoticias() {
   });
   
   const [formErrors, setFormErrors] = useState({});
+
+  // Estado de autenticação
+  const [usuario, setUsuario] = useState(null);
+
+  // Checar token ao carregar a página para persistir login
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUsuario({
+          nome: decoded.username || decoded.email,
+          ...decoded
+        });
+      } catch {
+        setUsuario(null);
+      }
+    } else {
+      setUsuario(null);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchNoticias = async () => {
@@ -127,28 +149,44 @@ export default function PortalNoticias() {
   };
 
   // Funções para lidar com os formulários
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     const errors = {};
-    
     if (!loginForm.email) errors.email = "Email é obrigatório";
     if (!loginForm.senha) errors.senha = "Senha é obrigatória";
-    
     if (Object.keys(errors).length === 0) {
-      // Aqui você implementaria a lógica de login
-      console.log("Tentando fazer login:", loginForm);
-      alert("Funcionalidade de login será implementada!");
-      setShowLoginModal(false);
-      setLoginForm({ email: "", senha: "" });
+      try {
+        const res = await fetch("http://localhost:5001/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: loginForm.email, password: loginForm.senha })
+        });
+        const data = await res.json();
+        if (res.ok && data.token) {
+          localStorage.setItem("token", data.token);
+          try {
+            const decoded = jwtDecode(data.token);
+            setUsuario({ nome: decoded.username, ...decoded });
+          } catch {
+            setUsuario(null);
+          }
+          alert("Login realizado com sucesso!");
+          setShowLoginModal(false);
+          setLoginForm({ email: "", senha: "" });
+        } else {
+          setFormErrors({ geral: data.message || "Erro ao fazer login." });
+        }
+      } catch (err) {
+        setFormErrors({ geral: "Erro de conexão com o servidor." });
+      }
     } else {
       setFormErrors(errors);
     }
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     const errors = {};
-    
     if (!registerForm.nome) errors.nome = "Nome é obrigatório";
     if (!registerForm.email) errors.email = "Email é obrigatório";
     if (!registerForm.senha) errors.senha = "Senha é obrigatória";
@@ -156,13 +194,24 @@ export default function PortalNoticias() {
     if (registerForm.senha !== registerForm.repetirSenha) {
       errors.repetirSenha = "As senhas não coincidem";
     }
-    
     if (Object.keys(errors).length === 0) {
-      // Aqui você implementaria a lógica de registro
-      console.log("Tentando registrar:", registerForm);
-      alert("Funcionalidade de registro será implementada!");
-      setShowRegisterModal(false);
-      setRegisterForm({ nome: "", email: "", senha: "", repetirSenha: "" });
+      try {
+        const res = await fetch("http://localhost:5001/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: registerForm.nome, email: registerForm.email, password: registerForm.senha })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert("Registro realizado com sucesso! Faça login para continuar.");
+          setShowRegisterModal(false);
+          setRegisterForm({ nome: "", email: "", senha: "", repetirSenha: "" });
+        } else {
+          setFormErrors({ geral: data.message || "Erro ao registrar." });
+        }
+      } catch (err) {
+        setFormErrors({ geral: "Erro de conexão com o servidor." });
+      }
     } else {
       setFormErrors(errors);
     }
@@ -189,6 +238,12 @@ export default function PortalNoticias() {
       setRegisterForm({ nome: "", email: "", senha: "", repetirSenha: "" });
     }
     setFormErrors({});
+  };
+
+  // Função de logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setUsuario(null);
   };
 
   // Loading state
@@ -227,49 +282,54 @@ export default function PortalNoticias() {
 
               {/* Botões de Ação - posicionados absolutamente à direita */}
               <div className="absolute top-1/2 right-0 transform -translate-y-1/2 flex items-center gap-2">
-                {/* Botão Iniciar Sessão */}
-                <button 
-                  onClick={() => setShowLoginModal(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg text-sm"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                    />
-                  </svg>
-                  Iniciar Sessão
-                </button>
-
-                {/* Botão Registrar */}
-                <button 
-                  onClick={() => setShowRegisterModal(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg text-sm"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                    />
-                  </svg>
-                  Registrar
-                </button>
-
-                {/* Botão Nova Notícia */}
+                {usuario && (usuario.nome || usuario.email) && (
+                  <>
+                    <span className="mr-2 text-gray-800 font-medium">Bem-vindo, {usuario.nome || usuario.email}</span>
+                    <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-3 rounded-md text-sm transition-colors">Sair</button>
+                  </>
+                )}
+                {!usuario && (
+                  <>
+                    <button 
+                      onClick={() => setShowLoginModal(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg text-sm"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                        />
+                      </svg>
+                      Iniciar Sessão
+                    </button>
+                    <button 
+                      onClick={() => setShowRegisterModal(true)}
+                      className="bg-green-600 hover:bg-green-700 text-white font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg text-sm"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                        />
+                      </svg>
+                      Registrar
+                    </button>
+                  </>
+                )}
                 <Link href="/criar-noticia">
                   <button className="bg-gray-800 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg text-sm">
                     <svg
@@ -477,6 +537,7 @@ export default function PortalNoticias() {
               </div>
 
               <form onSubmit={handleLoginSubmit} className="space-y-4">
+                {formErrors.geral && (<p className="text-red-500 text-sm mb-2">{formErrors.geral}</p>)}
                 <div>
                   <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">
                     Email
@@ -541,6 +602,7 @@ export default function PortalNoticias() {
               </div>
 
               <form onSubmit={handleRegisterSubmit} className="space-y-4">
+                {formErrors.geral && (<p className="text-red-500 text-sm mb-2">{formErrors.geral}</p>)}
                 <div>
                   <label htmlFor="register-nome" className="block text-sm font-medium text-gray-700 mb-1">
                     Nome Completo
