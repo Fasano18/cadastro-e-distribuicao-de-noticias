@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import dotenv from "dotenv";
 
 export default function EditarNoticia() {
   const router = useRouter();
@@ -63,7 +64,7 @@ export default function EditarNoticia() {
 
     try {
       setCarregando(true);
-      const response = await fetch(`http://localhost:5001/news/${id}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/news/${id}`);
 
       if (!response.ok) {
         throw new Error(`Erro ao carregar notícia: ${response.status}`);
@@ -222,7 +223,7 @@ export default function EditarNoticia() {
 
       console.log("Dados sendo enviados:", dadosEnvio);
 
-      const response = await fetch(`http://localhost:5001/news/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/news/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -257,7 +258,7 @@ export default function EditarNoticia() {
       let mensagemErro = "Erro desconhecido";
       if (error.message.includes("Failed to fetch")) {
         mensagemErro =
-          "Erro de conexão: Verifique se a API está rodando em http://localhost:5001";
+          `Erro de conexão: Verifique se a API está rodando em ${process.env.NEXT_PUBLIC_API_URL}`;
       } else if (error.message.includes("NetworkError")) {
         mensagemErro = "Erro de rede: Não foi possível conectar com a API";
       } else {

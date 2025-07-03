@@ -23,7 +23,7 @@ export default function DetalhesNoticia() {
 
   const buscarNoticia = async (noticiaId) => {
     try {
-      const response = await fetch(`http://localhost:5001/news/${noticiaId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/news/${noticiaId}`);
       if (!response.ok) {
         throw new Error(`Erro ao buscar notícia: ${response.status}`);
       }
@@ -39,7 +39,7 @@ export default function DetalhesNoticia() {
 
   const buscarNoticiasRelacionadas = async (noticiaAtual) => {
     try {
-      const response = await fetch("http://localhost:5001/news");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/news`);
       if (!response.ok) {
         throw new Error(
           `Erro ao buscar notícias relacionadas: ${response.status}`
@@ -178,7 +178,7 @@ export default function DetalhesNoticia() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/news/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/news/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
