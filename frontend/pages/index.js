@@ -3,6 +3,9 @@ import Head from "next/head";
 import Link from "next/link";
 import { jwtDecode } from "jwt-decode";
 import { X } from "lucide-react";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export default function PortalNoticias() {
   const [noticias, setNoticias] = useState([]);
@@ -52,7 +55,7 @@ export default function PortalNoticias() {
       try {
         setCarregando(true);
         setErro(null);
-        const response = await fetch("http://localhost:5001/news");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/news`);
 
         if (!response.ok) {
           throw new Error(`Erro na API: ${response.status}`);
@@ -114,7 +117,7 @@ export default function PortalNoticias() {
     if (!loginForm.senha) errors.senha = "Senha é obrigatória";
     if (Object.keys(errors).length === 0) {
       try {
-        const res = await fetch("http://localhost:5001/auth/login", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -157,7 +160,7 @@ export default function PortalNoticias() {
     }
     if (Object.keys(errors).length === 0) {
       try {
-        const res = await fetch("http://localhost:5001/auth/register", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

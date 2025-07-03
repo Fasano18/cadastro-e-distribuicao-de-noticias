@@ -2,6 +2,9 @@ import { useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export default function CriarNoticia() {
   const router = useRouter();
@@ -179,7 +182,7 @@ export default function CriarNoticia() {
 
       console.log("Dados sendo enviados:", dadosEnvio);
 
-      const response = await fetch("http://localhost:5001/news", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/news`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -227,7 +230,7 @@ export default function CriarNoticia() {
       let mensagemErro = "Erro desconhecido";
       if (error.message.includes("Failed to fetch")) {
         mensagemErro =
-          "Erro de conexão: Verifique se a API está rodando em http://localhost:5001";
+          "Erro de conexão: Verifique se a API está rodando em ${process.env.NEXT_PUBLIC_API_URL}";
       } else if (error.message.includes("NetworkError")) {
         mensagemErro = "Erro de rede: Não foi possível conectar com a API";
       } else {
