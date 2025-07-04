@@ -2,12 +2,17 @@ const newsModel = require('../models/newsModel');
 
 exports.insertNews = async (newsData) => {
   try {
-    const newNews = new newsModel(newsData);
-
-    return await newNews.save();
+    if (Array.isArray(newsData)) {
+      console.log(`Serviço: Recebido um array com ${newsData.length} notícias para inserção em massa.`);
+      return await newsModel.insertMany(newsData);
+    } else {
+      console.log("Serviço: Recebida uma única notícia para inserção.");
+      const newNews = new newsModel(newsData);
+      return await newNews.save();
+    }
   }
   catch (error) {
-    console.error("Erro no serviço ao tentar salvar notícia:", error.message);
+    console.error("Erro no serviço ao tentar salvar notícia(s):", error.message);
     throw error;
   }
 }

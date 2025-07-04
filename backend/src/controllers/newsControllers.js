@@ -9,10 +9,18 @@ const prepareResponse = (res, next, data, message, statusCode) => {
 
 exports.insert = async (req, res, next) => {
   try {
-    const newNews = await newsServices.insertNews(req.body);
-    prepareResponse(res, next, { item: newNews }, 'Notícia inserida com sucesso', 201);
+    const createdData = await newsServices.insertNews(req.body);
+
+    const isArray = Array.isArray(createdData);
+    const message = isArray 
+      ? `${createdData.length} notícias inseridas com sucesso` 
+      : 'Notícia inserida com sucesso';
+    
+    const responseData = isArray ? { items: createdData } : { item: createdData };
+
+    prepareResponse(res, next, responseData, message, 201);
   } catch (error) {
-    console.error('Erro ao inserir notícia:', error);
+    console.error('Erro ao inserir notícia(s):', error);
     next(error);
   }
 };
