@@ -29,10 +29,8 @@ Sistema web para **cadastro e distribuição de notícias**, com interface moder
 - **RF03**: Gerenciamento completo (CRUD) de notícias em um painel administrativo.
 - **RF04**: Listagem pública e paginada das notícias, ordenadas por data de publicação.
 - **RF05**: Página de detalhes para cada notícia, com conteúdo completo e notícias relacionadas.
-- **RF06**: Sistema de busca por palavra-chave e filtros por tema, título e autor.
-- **RF07**: Interface totalmente responsiva, adaptada para desktops, tablets e smartphones.
-- **RF08 (Não-Funcional)**: Respostas da API seguindo o padrão HATEOAS para guiar as interações do cliente.
-- **RF09 (Não-Funcional)**: Segurança reforçada contra ataques de força bruta no endpoint de login.
+- **RF06 (Não-Funcional)**: Respostas da API seguindo o padrão HATEOAS para guiar as interações do cliente.
+- **RF07 (Não-Funcional)**: Segurança reforçada contra ataques de força bruta no endpoint de login.
   
 ---
   
